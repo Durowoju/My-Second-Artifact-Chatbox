@@ -1,115 +1,237 @@
 import json
+import os
+import random
 import textwrap
 
-DATA_PATH = "data/presentations.json"
+
+# Path to the data file (../data/presentations.json relative to this script)
+DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "presentations.json")
 
 
-def load_speakers(path=DATA_PATH):
+def load_speakers(path: str = DATA_PATH):
+    """Load speaker data from JSON file."""
+    if not os.path.exists(path):
+        print(f"[ERROR] Could not find data file at: {path}")
+        return []
+
     with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+
+    # Allow either a list or {"speakers": [...]} style
+    if isinstance(data, dict):
+        data = data.get("speakers", [])
+
+    if not isinstance(data, list):
+        print("[ERROR] Data format not recognized. Expected a list of speaker records.")
+        return []
+
+    return data
+
+
+def build_indexes(speakers):
+    """Build lookup dictionaries for names and themes."""
+    by_name = {}
+    by_theme = {}
+
+    for sp in speakers:
+        name = (sp.get("name") or "").strip()
+        theme = (sp.get("theme") or "").strip()
+
+        if name:
+            by_name[name.lower()] = sp
+
+        # Index by primary theme
+        if theme:
+            by_theme.setdefault(theme.lower(), []).append(sp)
+
+        # Also index by tags if available
+        tags = sp.get("tags") or []
+        for tag in tags:
+            tag_key = (tag or "").strip().lower()
+            if tag_key:
+                by_theme.setdefault(tag_key, []).append(sp)
+
+    return by_name, by_theme
+
+
+def print_header():
+    print("=" * 70)
+    print(" TED-Style Presentation Chatbot ".center(70, "="))
+    print("=" * 70)
+    print("Ask about student speakers, themes, or get a motivational summary.\n")
+
+
+def print_menu():
+    print("\nPlease choose an option:")
+    print("  1. List all speakers")
+    print("  2. List all themes/tags")
+    print("  3. Get information about a specific speaker")
+    print("  4. Find speakers by theme or tag")
+    print("  5. Get a random motivational summary")
+    print("  6. Exit")
+
+
+def wrap(text, width=80, indent=""):
+    wrapped = textwrap.fill(text, width=width)
+    if indent:
+        wrapped = textwrap.indent(wrapped, indent)
+    return wrapped
+
+
+def show_speaker(sp):
+    """Nicely print a single speaker record."""
+    name = sp.get("name", "Unknown speaker")
+    title = sp.get("title", "Untitled talk")
+    theme = sp.get("theme", "Unknown theme")
+    summary = sp.get("summary", "No summary available.")
+    tags = sp.get("tags") or []
+
+    print("\n" + "-" * 70)
+    print(f"Speaker : {name}")
+    print(f"Title   : {title}")
+    print(f"Theme   : {theme}")
+    if tags:
+        print(f"Tags    : {', '.join(tags)}")
+    print("-" * 70)
+    print(wrap(summary))
+    print("-" * 70 + "\n")
 
 
 def list_speakers(speakers):
-    print("\nAvailable speakers:\n")
+    if not speakers:
+        print("No speakers found.")
+        return
+    print("\nAvailable speakers:")
     for sp in speakers:
-        print(f"- {sp['name']} — {sp['presentation_title']}")
-    print()
+        name = sp.get("name", "Unknown")
+        title = sp.get("title", "Untitled talk")
+        print(f"  - {name} — \"{title}\"")
 
 
-def find_by_name(speakers, name_query: str):
-    name_query = name_query.lower()
-    for sp in speakers:
-        if name_query in sp["name"].lower() or name_query in sp["id"].lower():
-            return sp
-    return None
+def list_themes(by_theme):
+    if not by_theme:
+        print("No themes/tags found.")
+        return
+    print("\nAvailable themes/tags:")
+    for theme in sorted(by_theme.keys()):
+        print(f"  - {theme}")
 
 
-def find_by_tag(speakers, tag_query: str):
-    tag_query = tag_query.lower().replace("#", "")
-    results = []
-    for sp in speakers:
-        for t in sp.get("tags", []):
-            if tag_query in t.lower():
-                results.append(sp)
-                break
-    return results
+def search_speaker(by_name):
+    query = input("\nEnter the speaker's name: ").strip().lower()
+    if not query:
+        print("No name entered.")
+        return
+
+    # Exact lookup first
+    sp = by_name.get(query)
+    if not sp:
+        # Try partial match
+        matches = [
+            v for k, v in by_name.items()
+            if query in k
+        ]
+        if not matches:
+            print("No matching speaker found.")
+            return
+        elif len(matches) == 1:
+            sp = matches[0]
+        else:
+            print("Multiple matches found:")
+            for i, m in enumerate(matches, start=1):
+                print(f"  {i}. {m.get('name', 'Unknown')}")
+            choice = input("Select a number (or press Enter to cancel): ").strip()
+            if not choice.isdigit():
+                print("Cancelled.")
+                return
+            idx = int(choice) - 1
+            if idx < 0 or idx >= len(matches):
+                print("Invalid choice.")
+                return
+            sp = matches[idx]
+
+    show_speaker(sp)
 
 
-def print_wrapped(text: str, width: int = 80):
-    print(textwrap.fill(text, width=width))
+def search_by_theme(by_theme):
+    query = input("\nEnter a theme or tag (e.g., growth, courage, AI): ").strip().lower()
+    if not query:
+        print("No theme entered.")
+        return
+
+    matches = by_theme.get(query)
+    if not matches:
+        # Try partial match over keys
+        keys = [k for k in by_theme.keys() if query in k]
+        if not keys:
+            print("No speakers found for that theme/tag.")
+            return
+        matches = []
+        for k in keys:
+            matches.extend(by_theme[k])
+
+    print(f"\nSpeakers related to '{query}':")
+    unique = []
+    seen = set()
+    for sp in matches:
+        name = sp.get("name", "Unknown")
+        if name not in seen:
+            unique.append(sp)
+            seen.add(name)
+
+    for sp in unique:
+        name = sp.get("name", "Unknown")
+        title = sp.get("title", "Untitled talk")
+        print(f"  - {name} — \"{title}\"")
+
+    # Optionally show one in detail
+    choice = input("\nWould you like to see one speaker's summary? (y/n): ").strip().lower()
+    if choice == "y" and unique:
+        sp = random.choice(unique)
+        show_speaker(sp)
+
+
+def random_motivation(speakers):
+    if not speakers:
+        print("No speakers available.")
+        return
+    sp = random.choice(speakers)
+    print("\nHere's a random motivational insight for you:")
+    show_speaker(sp)
 
 
 def main():
     speakers = load_speakers()
-    print("=" * 80)
-    print(" TED-Style Presentation Chatbot ")
-    print("=" * 80)
-    print("Ask about a speaker, e.g.:")
-    print('  - "tell me about Emmanuel"')
-    print('  - "summary for Sahil"')
-    print('  - "who talks about AI?"')
-    print('  - "list speakers"')
-    print('  - "exit"\n')
+    if not speakers:
+        return
+
+    by_name, by_theme = build_indexes(speakers)
+    print_header()
 
     while True:
-        user = input("You: ").strip()
-        if not user:
-            continue
+        try:
+            print_menu()
+            choice = input("\nEnter your choice (1–6): ").strip()
 
-        if user.lower() in ["exit", "quit", "q"]:
-            print("Bot: Thank you for chatting. Keep going beyond boundaries!")
+            if choice == "1":
+                list_speakers(speakers)
+            elif choice == "2":
+                list_themes(by_theme)
+            elif choice == "3":
+                search_speaker(by_name)
+            elif choice == "4":
+                search_by_theme(by_theme)
+            elif choice == "5":
+                random_motivation(speakers)
+            elif choice == "6":
+                print("\nThank you for using the TED-Style Presentation Chatbot. Goodbye!")
+                break
+            else:
+                print("Invalid choice. Please enter a number from 1 to 6.")
+        except (KeyboardInterrupt, EOFError):
+            print("\n\nExiting. Goodbye!")
             break
 
-        if "list" in user.lower() and "speaker" in user.lower():
-            list_speakers(speakers)
-            continue
-
-        # search by tag keyword
-        if "tag" in user.lower() or "#" in user:
-            # extract last word as tag query
-            tag_query = user.split()[-1]
-            matches = find_by_tag(speakers, tag_query)
-            if matches:
-                print("\nBot: Here are some speakers related to that theme:\n")
-                for sp in matches:
-                    print(f"- {sp['name']} — {sp['presentation_title']}")
-                print()
-            else:
-                print("\nBot: I couldn't find any talks with that tag or theme.\n")
-            continue
-
-        # try to detect a name in the query
-        found = None
-        for sp in speakers:
-            if sp["name"].split()[0].lower() in user.lower():
-                found = sp
-                break
-
-        if not found:
-            # fallback: ask user for a name
-            print("\nBot: Which speaker are you asking about? (first name is enough)")
-            name_q = input("Speaker name: ").strip()
-            found = find_by_name(speakers, name_q)
-
-        if not found:
-            print("\nBot: I couldn't find that speaker. Try 'list speakers' to see options.\n")
-            continue
-
-        # decide what kind of answer to give
-        if "summary" in user.lower() or "summarize" in user.lower():
-            print(f"\nBot: Here’s a short summary of {found['name']}'s talk:\n")
-            print_wrapped(found["intro_paragraph"])
-            print()
-        elif "message" in user.lower() or "lesson" in user.lower():
-            print(f"\nBot: Here’s the key message from {found['name']}:\n")
-            print_wrapped(found["key_message"])
-            print()
-        else:
-            print(f"\nBot: Here’s some information about {found['name']}:\n")
-            print_wrapped(found["speaker_intro"])
-            print("\nKey message:")
-            print_wrapped(found["key_message"])
-            print()
 
 if __name__ == "__main__":
     main()
