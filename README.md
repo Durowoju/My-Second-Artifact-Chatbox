@@ -1,29 +1,73 @@
-# My-Second-Artifact-Chatbox 
-_A Collaborative AI Chatbot Built from Real Student Stories_
+🌟 My-Second-Artifact-Chatbox
 
-## 📌 Project Overview
-This project showcases a custom chatbot built from TED-style presentation scripts written by multiple graduate students. The chatbot can answer questions about each speaker, summarize their talk, and respond in a motivational, personalized tone using curated content.
+A Collaborative AI Chatbot Built from Real Student Stories
 
-The core knowledge base is a structured dataset extracted from student TED-style talk outlines and introductions. :contentReference[oaicite:0]{index=0}
+<p align="center"> <img src="https://img.shields.io/badge/Python-3.10-blue"> <img src="https://img.shields.io/badge/AI-Chatbot-green"> <img src="https://img.shields.io/badge/Data-Structured%20JSON-orange"> <img src="https://img.shields.io/badge/Status-Completed-brightgreen"> </p>
 
-## 🧠 What the Chatbot Can Do
-- Answer questions about each speaker’s background, vision, and key message  
-- Provide short motivational summaries based on a chosen speaker  
-- List speakers by theme or tag (e.g., growth, AI, courage, career change)  
-- Demonstrate how structured text content can power a simple conversational agent  
+📌 Project Overview
 
-## 🛠️ Technologies Used
-- Python 3.x  
-- JSON for structured data storage  
-- Simple rule-based retrieval over a curated dataset  
+This artifact showcases a custom AI chatbot created from TED-style presentation scripts written by multiple graduate students.
+The chatbot can:
 
-_No external NLP libraries are required for this basic portfolio version._
+Answer questions about each speaker
+
+Summarize their motivational message
+
+Retrieve speakers by theme or topic
+
+Provide personalized encouragement using each speaker’s story
+
+The core dataset was built by extracting, cleaning, and structuring written presentation content into a JSON file.
+
+🧠 What the Chatbot Can Do
+
+✔ Retrieve information about any speaker
+
+✔ Provide a motivational summary
+
+✔ List speakers based on themes (growth, AI, leadership, courage, etc.)
+
+✔ Respond to conversational queries using curated content
+
+✔ Demonstrate how structured text powers simple rule-based AI
+
+🛠️ Technologies Used
+
+Python 3.x
+
+JSON for structured dataset storage
+
+Rule-based retrieval logic (no ML model required)
+
+Clean content preprocessing from student scripts
+
+Console-based interactive chatbot
+
+No external NLP libraries are required for this portfolio version.
 
 ## 📂 Repository Structure
 ```text
-data/
-  presentations.json      # Structured TED-style speaker data
-src/
-  chatbot.py              # Simple console-based chatbot
-README.md                 # Project documentation
-requirements.txt          # Dependencies (minimal)
+My-Second-Artifact-Chatbox/
+│
+├── data/
+│   └── presentations.json      # Structured TED-style speaker dataset
+│
+├── src/
+│   └── chatbot.py              # Console-based chatbot script
+│
+├── README.md                   # Documentation
+└── requirements.txt            # Minimal dependencies
+
+▶️ How to Run the Chatbot Locally
+1. Clone the Repository
+git clone https://github.com/Durowoju/My-Second-Artifact-Chatbox.git
+cd My-Second-Artifact-Chatbox
+
+2. Run the Chatbot
+python src/chatbot.py
+
+
+
+
+
+
