@@ -57,8 +57,3 @@ My-Second-Artifact-Chatbox/
 │
 ├── README.md                   # Documentation
 └── requirements.txt            # Minimal dependencies
-
-
-
-
-
