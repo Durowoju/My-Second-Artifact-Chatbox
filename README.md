@@ -47,13 +47,16 @@ No external NLP libraries are required for this portfolio version.
 
 ## 📂 Repository Structure
 ```text
+```text
 My-Second-Artifact-Chatbox/
 │
 ├── data/
-│   └── presentations.json      # Structured TED-style speaker dataset
+│   └── presentations.json
 │
 ├── src/
-│   └── chatbot.py              # Console-based chatbot script
+│   └── chatbot.py
 │
-├── README.md                   # Documentation
-└── requirements.txt            # Minimal dependencies
+├── README.md
+└── requirements.txt
+```   <-- THIS LINE IS REQUIRED TO END THE CODE BLOCK
+---
