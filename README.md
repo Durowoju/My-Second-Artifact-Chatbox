@@ -58,15 +58,6 @@ My-Second-Artifact-Chatbox/
 ├── README.md                   # Documentation
 └── requirements.txt            # Minimal dependencies
 
-▶️ How to Run the Chatbot Locally
-1. Clone the Repository
-git clone https://github.com/Durowoju/My-Second-Artifact-Chatbox.git
-cd My-Second-Artifact-Chatbox
-
-2. Run the Chatbot
-python src/chatbot.py
-
-
 
 
 
