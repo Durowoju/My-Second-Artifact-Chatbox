@@ -1,3 +1,14 @@
+<p align="center">
+  <img src="./chatbox-banner.png"
+       alt="My-Second-Artifact-Chatbox – AI chatbot built from student TED-style stories"
+       width="900">
+</p>
+
+<h1 align="center">My-Second-Artifact-Chatbox</h1>
+<h3 align="center">A Collaborative AI Chatbot Built from Real Student Stories</h3>
+
+---
+
 # 🌟 My-Second-Artifact-Chatbox  
 _A Collaborative AI Chatbot Built from Real Student Stories_
 
